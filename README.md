@@ -196,7 +196,7 @@ docker run -d -p 8080:8080 -v %cd%/xianyu-auto-reply/:/app/data/ --name xianyu-a
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/zhinianboke/xianyu-auto-reply.git
+git clone https://github.com/haoyun369/xianyu-auto-reply.git
 cd xianyu-auto-reply
 
 # 2. 设置脚本执行权限（Linux/macOS）
