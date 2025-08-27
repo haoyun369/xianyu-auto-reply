@@ -1,5 +1,5 @@
-# ================================
-# 闲鱼自动回复系统 - Python依赖包
+# ================================ 
+# 闲鱼自动回复系统 - Python依赖包 (armv7l适配)
 # ================================
 
 # ==================== 核心Web框架 ====================
@@ -39,7 +39,8 @@ Pillow>=10.0.0
 qrcode[pil]>=7.4.2
 
 # ==================== 浏览器自动化 ====================
-playwright>=1.40.0
+# ⚠️ Playwright 不支持 armv7l，使用 pyppeteer 替代
+pyppeteer>=1.0.2
 
 # ==================== 加密和安全 ====================
 PyJWT>=2.8.0
@@ -60,23 +61,10 @@ email-validator>=2.0.0
 xlsxwriter>=3.1.0
 
 # ==================== 版本说明 ====================
-# 本文件包含闲鱼自动回复系统的所有必需依赖
-# 版本号已经过测试验证，确保兼容性和稳定性
-#
+# 本文件已适配 armv7l 架构
 # Python版本要求: 3.11+
-#
 # 安装命令:
 # pip install --upgrade pip
 # pip install -r requirements.txt
-# playwright install chromium
-# playwright install-deps chromium  # Linux系统需要
 #
-# ==================== 内置模块说明 ====================
-# 以下模块是Python内置模块，无需安装：
-# sqlite3, json, base64, hashlib, hmac, time, datetime, os, sys, re, urllib
-# asyncio, threading, pathlib, uuid, random, secrets, traceback, logging
-# collections, itertools, functools, copy, pickle, gzip, zipfile, shutil
-# tempfile, io, csv, xml, html, http, socket, ssl, subprocess, signal
-# inspect, ast, enum, math, decimal, array, queue, contextlib, warnings
-# typing, dataclasses, weakref, gc, platform, stat, glob, fnmatch, mimetypes
-# email, smtplib, imaplib, poplib, ftplib, telnetlib, configparser, argparse
+# pyppeteer 会自动下载 Chromium 对应版本
