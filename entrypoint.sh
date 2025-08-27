@@ -1,12 +1,8 @@
 #!/bin/bash
+# ARMv7 无头浏览器启动脚本
 
-echo "Starting xianyu-auto-reply system..."
+export DISPLAY=:99
+Xvfb :99 -screen 0 1920x1080x24 &
 
-# Create necessary directories
-mkdir -p /app/data /app/logs /app/backups /app/static/uploads/images
-
-# Set permissions
-chmod 777 /app/data /app/logs /app/backups /app/static/uploads /app/static/uploads/images
-
-# Start the application
-exec python Start.py
+# 启动 Python 应用
+exec python main.py
