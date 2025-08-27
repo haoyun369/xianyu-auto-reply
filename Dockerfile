@@ -1,30 +1,27 @@
-# 使用Python 3.11作为基础镜像
+# 使用 Python 3.11 作为基础镜像
 FROM python:3.11-slim-bookworm
 
-# 设置标签信息
+# 作者和项目信息
 LABEL maintainer="zhinianboke"
 LABEL version="2.2.0"
 LABEL description="闲鱼自动回复系统 - 企业级多用户版本，支持自动发货和免拼发货"
 LABEL repository="https://github.com/zhinianboke/xianyu-auto-reply"
 LABEL license="仅供学习使用，禁止商业用途"
-LABEL author="zhinianboke"
-LABEL build-date=""
-LABEL vcs-ref=""
 
 # 设置工作目录
 WORKDIR /app
 
 # 设置环境变量
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV TZ=Asia/Shanghai
-ENV DOCKER_ENV=true
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    TZ=Asia/Shanghai \
+    DOCKER_ENV=true \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+    NODE_PATH=/usr/lib/node_modules
 
-# 安装系统依赖（包括Playwright浏览器依赖）
+# 安装系统依赖（Playwright + 科学计算库编译工具）
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        # 基础工具
         nodejs \
         npm \
         tzdata \
@@ -63,36 +60,42 @@ RUN apt-get update && \
         libx11-xcb1 \
         libxfixes3 \
         xdg-utils \
-        && apt-get clean \
-        && rm -rf /var/lib/apt/lists/* \
-        && rm -rf /tmp/* \
-        && rm -rf /var/tmp/*
+        # 科学计算依赖
+        build-essential \
+        python3-dev \
+        gfortran \
+        libffi-dev \
+        libssl-dev \
+        libxml2-dev \
+        libxslt1-dev \
+        zlib1g-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # 设置时区
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# 验证Node.js安装并设置环境变量
+# 验证 node/npm
 RUN node --version && npm --version
-ENV NODE_PATH=/usr/lib/node_modules
 
-# 复制requirements.txt并安装Python依赖
+# 复制依赖文件并安装 Python 依赖
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+
+# ⚡ 先升级 pip，再预装 numpy，避免 requirements 编译太久
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
+ && pip install --no-cache-dir numpy \
+ && pip install --no-cache-dir -r requirements.txt
 
 # 复制项目文件
 COPY . .
 
-# 安装Playwright浏览器（必须在复制项目文件之后）
+# 安装 Playwright 浏览器
 RUN playwright install chromium && \
     playwright install-deps chromium
 
 # 创建必要的目录并设置权限
 RUN mkdir -p /app/logs /app/data /app/backups /app/static/uploads/images && \
     chmod 777 /app/logs /app/data /app/backups /app/static/uploads /app/static/uploads/images
-
-# 注意: 为了简化权限问题，使用root用户运行
-# 在生产环境中，建议配置适当的用户映射
 
 # 暴露端口
 EXPOSE 8080
@@ -101,10 +104,9 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
-# 复制启动脚本并设置权限
+# 启动脚本
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh && \
     dos2unix /app/entrypoint.sh 2>/dev/null || true
 
-# 启动命令（使用ENTRYPOINT确保脚本被执行）
 ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh"]
